@@ -1,0 +1,118 @@
+#include <SFML/Graphics.hpp>
+#include <sstream>
+#include <iostream>
+#include "bat.h"
+#include "ball.h"
+using namespace sf;
+using namespace std;
+
+int main(){
+	// *** Setup (Declaration & Initialisation) ***
+	VideoMode vm(1920,1080);
+	RenderWindow window(vm,"Pong Game");
+	
+	View view(FloatRect(0, 0, 1920, 1080));
+	window.setView(view);
+	
+	int score = 0;
+	int lives = 3;
+	
+	// Text
+    Font font;
+    font.loadFromFile("DS-DIGI.TTF");
+    
+    Text hud;
+    hud.setFont(font);
+    hud.setCharacterSize(45);
+    hud.setFillColor(Color::White);
+    
+    Bat bat(1920 / 2.0f, 1080 - 20);
+    Ball ball(1920 / 2.0f, 10);
+    
+    bool ballTouchedBat = false;
+    
+    Clock clock;
+    
+	// Game Loop
+	while(window.isOpen()){
+	
+		Event event;
+		while(window.pollEvent(event)){							// Event handle
+			if(event.type == Event::Closed){
+				window.close();
+			}
+		}
+		
+		if(Keyboard::isKeyPressed(Keyboard::Escape)){ 			// Keyboard handle (Escape Key)
+			window.close();
+		}
+		
+		// Handling Player Input
+		if(Keyboard::isKeyPressed(Keyboard::Left)){
+			bat.moveLeft();
+		}
+		else{
+			bat.stopLeft();
+		}
+		
+		if(Keyboard::isKeyPressed(Keyboard::Right)){
+			bat.moveRight();
+		}
+		else{
+			bat.stopRight();
+		}
+		
+		
+		Time dt = clock.restart();
+		bat.update(dt);
+		ball.update(dt);
+		
+		/* HUD Updation */
+		stringstream ss;
+		ss << "Score = " << score << "    Lives = " << lives;
+		hud.setString(ss.str());
+				
+		// Ball hitting the sides
+		if(ball.getPosition().left < 0 || (ball.getPosition().left + ball.getPosition().width) > 1920){
+			ball.reboundSides();
+		}
+		
+		// Ball hitting the bottom
+		if(ball.getPosition().top > 1080){
+			ball.reboundBottom();
+			// Remove a life
+			lives = lives - 1;
+			if(lives < 1){
+				// Reset
+				score = 0;
+				lives = 3;
+			}
+			ball = Ball(1920 / 2.0f, 10);
+		}
+		
+		// Ball hitting the top
+		if(ball.getPosition().top < 0){
+			ball.reboundBatOrTop();
+			//Increase Score when ball touched bat
+			if(ballTouchedBat){
+				score = score + 1;
+			}
+			ballTouchedBat = false;
+		}
+		
+		// Ball hitting the BAT
+		if (ball.getPosition().intersects(bat.getPosition())){
+			ball.reboundBatOrTop();
+			ballTouchedBat = true;
+		}
+		
+		// Draw the Scene
+		window.clear();
+		window.draw(hud);
+		window.draw(bat.getShape());
+		window.draw(ball.getShape());
+		window.display();
+	}
+	
+	return 0;
+}
