@@ -1,0 +1,68 @@
+#include <SFML/Graphics.hpp>
+using namespace sf;
+using namespace std;
+
+class Bat{
+	private:
+		Vector2f m_Position;
+		RectangleShape m_Shape;
+		float m_Speed = 1000.0f;
+		bool m_MovingLeft = false;
+		bool m_MovingRight = false;
+		
+	public:
+		Bat(float startX, float startY);
+		RectangleShape getShape();
+		FloatRect getPosition();
+		void moveLeft();
+		void moveRight();
+		void stopLeft();
+		void stopRight();
+		void update(Time dt);
+};
+
+Bat::Bat(float startX, float startY){
+	m_Position.x = startX;
+    m_Position.y = startY;
+
+    m_Shape.setSize(Vector2f(100, 5));
+    m_Shape.setPosition(m_Position);
+}
+
+RectangleShape Bat::getShape(){
+	return m_Shape;
+}
+
+FloatRect Bat::getPosition(){
+	return m_Shape.getGlobalBounds();
+}
+
+void Bat::moveLeft(){
+	m_MovingLeft = true;
+}
+
+void Bat::moveRight(){
+	m_MovingRight = true;
+}
+
+void Bat::stopLeft(){
+	m_MovingLeft = false;
+}
+
+void Bat::stopRight(){
+	m_MovingRight = false;
+}
+
+void Bat::update(Time dt){
+	if(m_MovingLeft){
+		m_Position.x = m_Position.x - m_Speed * dt.asSeconds();
+	}
+	
+	if(m_MovingRight){
+		m_Position.x = m_Position.x + m_Speed * dt.asSeconds();
+	}
+	
+	m_Shape.setPosition(m_Position);
+}
+	
+
